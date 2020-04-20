@@ -26,10 +26,12 @@ import java.net.InetSocketAddress;
  */
 public class HttpServer {
 
-    int port;
+    private int port;
+    private String defaultUrl;
     private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
 
-    public HttpServer(int port) {
+    public HttpServer(int port, String defaultUrl) {
+        this.defaultUrl = defaultUrl;
         this.port = port;
     }
 
@@ -44,7 +46,7 @@ public class HttpServer {
                     .childOption(ChannelOption.SO_LINGER, 0).childOption(ChannelOption.SO_REUSEADDR, true)
                     .childOption(ChannelOption.SO_KEEPALIVE, true).group(boss, work)
                     .handler(new LoggingHandler(LogLevel.DEBUG))
-                    .childHandler(new HttpServerInitializer());
+                    .childHandler(new HttpServerInitializer(defaultUrl));
             log.info(" epoll init");
         } else if (KQueue.isAvailable()) {
             boss = new KQueueEventLoopGroup();
@@ -52,7 +54,7 @@ public class HttpServer {
             bootstrap.group(boss, work)
                     .channel(KQueueServerSocketChannel.class)
                     .childHandler(new ChannelInboundHandlerAdapter())
-                    .childHandler(new HttpServerInitializer())
+                    .childHandler(new HttpServerInitializer(defaultUrl))
                     .handler(new LoggingHandler(LogLevel.DEBUG));
             log.info(" epoll init");
         } else {
@@ -61,7 +63,7 @@ public class HttpServer {
             bootstrap.group(boss, work)
                     .handler(new LoggingHandler(LogLevel.DEBUG))
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpServerInitializer());
+                    .childHandler(new HttpServerInitializer(defaultUrl));
             log.info(" nio init");
         }
 

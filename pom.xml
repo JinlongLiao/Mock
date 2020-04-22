@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.liaojl</groupId>
-    <artifactId>test</artifactId>
+    <artifactId>mock</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <os.detected.name>osx</os.detected.name>

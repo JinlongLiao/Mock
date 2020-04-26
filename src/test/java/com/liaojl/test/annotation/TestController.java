@@ -13,4 +13,7 @@ import static java.lang.annotation.ElementType.TYPE;
 @Target({TYPE, METHOD})
 public @interface TestController {
     String name() default "";
+
+    String value() default "";
+
 }

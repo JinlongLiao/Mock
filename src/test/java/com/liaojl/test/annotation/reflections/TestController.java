@@ -1,4 +1,4 @@
-package com.liaojl.test.annotation;
+package com.liaojl.test.annotation.reflections;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package com.liaojl.test.annotation;
+package com.liaojl.test.annotation.reflections;
 
 import com.liaojl.test.JavaTest;
 import org.junit.BeforeClass;

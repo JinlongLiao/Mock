@@ -6,6 +6,6 @@ package com.liaojl.annotation.dto;
 public class BaseITestIII implements BaseService {
     @Override
     public void getInfo() {
-        System.out.println("Hello,BaseITestIII");
+        log.info("Hello,BaseITestIII");
     }
 }

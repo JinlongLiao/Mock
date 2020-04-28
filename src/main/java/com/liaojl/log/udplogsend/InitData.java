@@ -407,7 +407,7 @@ public class InitData {
 //        List<String> ipLists = InitData.getInstance().getApps(10);
 //        for (int i = 0; i < 2; i++) {
 //            Log log = InitData.getInstance().getLogs(userList, appList, ipLists, "2017-03-01", "2018-03-01");
-//            System.out.println(log.toString());
+//            log.info(log.toString());
 //        }
     }
 }

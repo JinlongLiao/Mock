@@ -52,13 +52,13 @@ public class AvlTree<T extends Comparable<? super T>> {
 
     //在avl中删除数据,这里并未实现
     public void remove(T x) {
-        System.out.println("Sorry, remove unimplemented");
+        log.info("Sorry, remove unimplemented");
     }
 
     //在avl树中找最小的数据
     public T findMin() {
         if (isEmpty())
-            System.out.println("树空");
+            log.info("树空");
         ;
         return findMin(root).element;
     }
@@ -66,7 +66,7 @@ public class AvlTree<T extends Comparable<? super T>> {
     //在avl树中找最大的数据
     public T findMax() {
         if (isEmpty())
-            System.out.println("树空");
+            log.info("树空");
         return findMax(root).element;
     }
 

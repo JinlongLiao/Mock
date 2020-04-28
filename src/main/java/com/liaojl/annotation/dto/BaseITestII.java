@@ -7,6 +7,6 @@ import com.liaojl.annotation.MyTestAnntation;
 public class BaseITestII implements BaseService {
     @Override
     public void getInfo() {
-        System.out.println("Hello,BaseITestII");
+        log.info("Hello,BaseITestII");
     }
 }

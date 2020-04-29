@@ -17,7 +17,8 @@ public class KpmTest {
     }
 
     /**
-     * </pre></blockquote>
+     * <blockquote>
+     * <pre>
      * 1. 首先获取{@code ps}  的next[]
      * <p>
      * 例如 ：[0,1,0]
@@ -25,13 +26,13 @@ public class KpmTest {
      * {@code target} caaab
      * {@code ps} aab
      * 1:caaab
-     * aab
+     *    aab
      * 没有相等的移动一位
      * 2:caaab
-     * aab
+     *    aab
      * 有两位相等 -> next[2]=0 为0时 +1
-     * 2:caaab
-     * aab
+     * 3:caaab
+     *     aab
      * 匹配成功
      *
      * </pre></blockquote>

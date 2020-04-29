@@ -5,11 +5,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.*;
 
 public class FutureTest {
     private static final Logger log = LoggerFactory.getLogger(FutureTest.class);
+    private ThreadPoolExecutor threadPoolExecutorLink = new ThreadPoolExecutor(
+            3,
+            5,
+            2,
+            TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
     @Test
     public void test1() throws Exception {
@@ -25,7 +29,7 @@ public class FutureTest {
                 log.error(e.getMessage(), e);
                 throw new CompletionException(e);
             }
-        });
+        }, threadPoolExecutorLink);
         // 新建一个Future
         CompletableFuture<String> futureBlocking = CompletableFuture.supplyAsync(() -> {
             try {

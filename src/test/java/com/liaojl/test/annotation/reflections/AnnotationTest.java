@@ -1,6 +1,6 @@
 package com.liaojl.test.annotation.reflections;
 
-import com.liaojl.test.JavaTest;
+import com.liaojl.test.speed.JavaTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.Reflections;

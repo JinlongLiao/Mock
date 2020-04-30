@@ -11,9 +11,32 @@ public class KpmTest {
 
     @Test
     public void test() {
-        String ps = "aab";
+        int size = 10000;
+        String ps = "abb";
         String target = "1gg2abababcabaabbca0";
-        kmp(target, ps);
+        long time1 = System.currentTimeMillis();
+
+        for (int i = 0; i < size; i++) {
+            String t1 = target;
+            String p1 = ps;
+            kmp(t1, p1);
+        }
+        long time2 = System.currentTimeMillis();
+        long totle1 = time2 - time1;
+
+
+        long time3 = System.currentTimeMillis();
+
+        for (int i = 0; i < size; i++) {
+            String t1 = target;
+            String p1 = ps;
+            t1.replace(p1, "");
+
+        }
+        long time4 = System.currentTimeMillis();
+        long totle2 = time4 - time3;
+        log.info("totle1:{}", totle1);
+        log.info("totle2:{}", totle2);
     }
 
     /**
@@ -40,13 +63,11 @@ public class KpmTest {
      * @param target 目标字符串
      * @param ps     匹配字符串
      */
-    public void kmp(String target, String ps) {
+    public int kmp(String target, String ps) {
 
         int[] next = getNext(ps);
         char[] psChars = ps.toCharArray();
         char[] targetChars = target.toCharArray();
-        log.info("next: {}", next);
-
         int index = -1;
         int i = 0;
         for (int j = 0; j < psChars.length; ) {
@@ -63,8 +84,7 @@ public class KpmTest {
                 j = 0;
             }
         }
-        log.info("index: {}", index + 1);
-
+        return index;
     }
 
     /**

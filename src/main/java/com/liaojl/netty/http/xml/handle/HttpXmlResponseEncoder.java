@@ -14,6 +14,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class HttpXmlResponseEncoder extends AbstractHttpXmlEncoder {
 
+    @Override
     protected void encode(ChannelHandlerContext ctx, Object o, List out) throws Exception {
         HttpXmlResponse msg = (HttpXmlResponse) o;
         ByteBuf body = encode0(ctx, msg.getResult());

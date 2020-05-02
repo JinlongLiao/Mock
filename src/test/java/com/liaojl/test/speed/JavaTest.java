@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * @author LiaoJL
@@ -54,9 +55,8 @@ public class JavaTest {
 
     }
 
-    @SneakyThrows
     @Test
-    public void fastJsonVsHession() {
+    public void fastJsonVsHession() throws IOException {
         Pojo pojo = new Pojo();
         String gsonStr = null;
         String fastStr = null;

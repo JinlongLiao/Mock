@@ -61,26 +61,44 @@ public class Order {
 
     @Override
     public boolean equals(final Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Order)) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Order)) {
+            return false;
+        }
         final Order other = (Order) o;
-        if (!other.canEqual((Object) this)) return false;
-        if (this.getOrderNumber() != other.getOrderNumber()) return false;
+        if (!other.canEqual((Object) this)) {
+            return false;
+        }
+        if (this.getOrderNumber() != other.getOrderNumber()) {
+            return false;
+        }
         final Object this$customer = this.getCustomer();
         final Object other$customer = other.getCustomer();
-        if (this$customer == null ? other$customer != null : !this$customer.equals(other$customer)) return false;
+        if (this$customer == null ? other$customer != null : !this$customer.equals(other$customer)) {
+            return false;
+        }
         final Object this$billTo = this.getBillTo();
         final Object other$billTo = other.getBillTo();
-        if (this$billTo == null ? other$billTo != null : !this$billTo.equals(other$billTo)) return false;
+        if (this$billTo == null ? other$billTo != null : !this$billTo.equals(other$billTo)) {
+            return false;
+        }
         final Object this$shipping = this.getShipping();
         final Object other$shipping = other.getShipping();
-        if (this$shipping == null ? other$shipping != null : !this$shipping.equals(other$shipping)) return false;
+        if (this$shipping == null ? other$shipping != null : !this$shipping.equals(other$shipping)) {
+            return false;
+        }
         final Object this$shipTo = this.getShipTo();
         final Object other$shipTo = other.getShipTo();
-        if (this$shipTo == null ? other$shipTo != null : !this$shipTo.equals(other$shipTo)) return false;
+        if (this$shipTo == null ? other$shipTo != null : !this$shipTo.equals(other$shipTo)) {
+            return false;
+        }
         final Object this$total = this.getTotal();
         final Object other$total = other.getTotal();
-        if (this$total == null ? other$total != null : !this$total.equals(other$total)) return false;
+        if (this$total == null ? other$total != null : !this$total.equals(other$total)) {
+            return false;
+        }
         return true;
     }
 
@@ -107,6 +125,7 @@ public class Order {
         return result;
     }
 
+    @Override
     public String toString() {
         return "Order(orderNumber=" + this.getOrderNumber() + ", customer=" + this.getCustomer() + ", billTo=" + this.getBillTo() + ", shipping=" + this.getShipping() + ", shipTo=" + this.getShipTo() + ", total=" + this.getTotal() + ")";
     }

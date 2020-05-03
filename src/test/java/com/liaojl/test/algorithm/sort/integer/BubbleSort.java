@@ -1,4 +1,4 @@
-package com.liaojl.test.algorithm.sort;
+package com.liaojl.test.algorithm.sort.integer;
 
 import org.junit.Test;
 import org.slf4j.Logger;

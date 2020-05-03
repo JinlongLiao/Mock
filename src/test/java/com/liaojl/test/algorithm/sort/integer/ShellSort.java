@@ -1,4 +1,4 @@
-package com.liaojl.test.algorithm.sort;
+package com.liaojl.test.algorithm.sort.integer;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ public class ShellSort extends InsertSort {
 
     @Test
     public void test() {
-        int[] ints = intSort(new int[]{2, 156, 123, 0, 8, -1});
+        int[] ints = intSort(sort1);
         log.info("ints:{}", ints);
     }
 }

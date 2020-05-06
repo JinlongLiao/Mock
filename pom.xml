@@ -195,7 +195,12 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>3.14.2</version>
-            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.openjdk.jol/jol-cli -->
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-cli</artifactId>
+            <version>0.10</version>
         </dependency>
     </dependencies>
     <build>

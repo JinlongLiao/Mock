@@ -1,0 +1,8 @@
+package com.liaojl.test.classloader;
+
+public class MyClassImp implements MyClass {
+    @Override
+    public String tellMeSecret() {
+        return "我是被加密的";
+    }
+}

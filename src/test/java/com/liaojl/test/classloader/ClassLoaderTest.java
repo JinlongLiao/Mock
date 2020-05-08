@@ -19,7 +19,6 @@ import java.util.Arrays;
 public class ClassLoaderTest {
     private static final Logger log = LoggerFactory.getLogger(ClassLoaderTest.class);
 
-    public static final int SIZE = 2048;
 
     @Test
     public void read() throws IOException {
@@ -38,6 +37,23 @@ public class ClassLoaderTest {
             byte[] encode = Base64Utils.encode(cache);
             log.info("\n {}\n", new String(encode));
             outputStream.write(encode);
+        } catch (FileNotFoundException e) {
+            throw e;
+        } catch (IOException e) {
+            throw e;
+        }
+
+    }
+    public static final int SIZE = 2048;
+    public synchronized void read2() throws IOException {
+        File file = new File("target/test-classes/com/liaojl/test/classloader/MyClassImp.class");
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+             FileOutputStream outputStream = new FileOutputStream("MyClassImp.txt",true)) {
+            byte[] cache = new byte[SIZE];
+            int readSize;
+            while ((readSize = fileInputStream.read(cache)) > -1) {
+                     outputStream.write(cache,0,readSize);
+            }
         } catch (FileNotFoundException e) {
             throw e;
         } catch (IOException e) {

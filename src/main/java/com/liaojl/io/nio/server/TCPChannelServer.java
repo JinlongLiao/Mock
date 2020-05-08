@@ -38,8 +38,8 @@ public class TCPChannelServer {
             // bind server socket channel to port 8899
             socketChannel.bind(new InetSocketAddress(NonBlockingTCPClient.port));
             // 3. register it with selector
-            socketChannel.register(selector, SelectionKey.OP_ACCEPT);
-
+            SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_ACCEPT);
+//            selectionKey.attach(null);
             while (true) {
                 // run forever
                 // 4. select ready SelectionKey for I/O operation

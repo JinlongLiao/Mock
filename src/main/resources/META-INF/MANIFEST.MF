@@ -1,0 +1,4 @@
+Agent-Class: com.liaojl.probe.agent.PreMyProgram
+Premain-Class: com.liaojl.probe.agent.PreMyProgram
+
+

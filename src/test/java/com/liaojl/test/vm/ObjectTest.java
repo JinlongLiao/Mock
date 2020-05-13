@@ -18,4 +18,13 @@ public class ObjectTest {
             log.info("{}", ClassLayout.parseInstance(o).toPrintable());
         }
     }
+
+    @Test
+    public void testNumberToSquare() {
+        int i = Integer.numberOfLeadingZeros(10);
+        int n = -1 >>> i;
+
+        log.info("I :{}", i);
+        log.info("N :{}", n + 1);
+    }
 }

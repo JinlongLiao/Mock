@@ -74,4 +74,44 @@ public class ObjectTest {
             System.out.printf(String.valueOf(a));
         }
     }
+
+    @Test
+    public void byteCodeTest2() {
+        System.out.println(byteCode());
+    }
+
+    /**
+     * 0 iconst_1 入栈
+     * 1 istore_1 存入本地变量
+     * 2 iinc 1 by 1 栈内值加一
+     * 5 new #15 <java/lang/Exception>
+     * 8 dup 复制栈顶数值并将复制值压入栈顶
+     * 9 invokespecial #18 <java/lang/Exception.<init>>
+     * 12 athrow 将栈顶的异常抛出
+     * 13 astore_2 将栈顶引用型数值存入第2个本地变量
+     * 14 iinc 1 by 1 栈内值加一
+     * 17 iload_1 将第1个int型本地变量推送至栈顶
+     * 18 istore_3 将栈顶int型数值存入第3个本地变量
+     * 19 iinc 1 by 1 将第1个int型本地变量推送至栈顶
+     * 22 iload_3 将栈顶int型数值存入第3个本地变量
+     * 23 ireturn 从当前方法返回int
+     * 24 astore 4 将栈顶引用型数值存入第4个本地变量
+     * 26 iinc 1 by 1 将第1个int型本地变量推送至栈顶
+     * 29 aload 4 将第4个i引用型本地变量推送至栈顶
+     * 31 athrow 将栈顶的异常抛出
+     *
+     * @return
+     */
+    public int byteCode() {
+        int a = 1;
+        try {
+            a++;
+            throw new Exception();
+        } catch (Exception e) {
+            ++a;
+            return a;
+        } finally {
+            ++a;
+        }
+    }
 }

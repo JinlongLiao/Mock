@@ -279,22 +279,530 @@ Post 表单数据能填充到参数集（Paramter Set）前必须满足的条件
 
 ## 文件上传
 
+当数据以multipart/form-data的格式发送时，servlet 容器支持文件上传。
+如果满足以下任何一个条件，servlet 容器提供 multipart/form-data格式数据的处理。
+
+- servlet处理的请求使用了第8.1.5节定义的注解@MultipartConfig。
+- 为了servlet处理请求，部署描述符包含了一个 multipart-config元素。
+
+请求中的 multipart/form-data 类型的数据如何可用，取决于servlet 容器是否提供 multipart/form-data 格式数据的处理：
+
+- 如果 servlet 容器提供 multipart/form-data 格式数据的处理，可通过 HttpServletRequest 中的以下方法得到：
+    -  public Collection getParts()
+    -  public Part getPart(String name) 
+    
+每个 part 都可通过 Part.getInputStream 方法访问头部，相关的内容类型和内容。 对于表单数据的 Content-Disposition，即使没有文件名，也可使用 part 的名称通过 HttpServletRequest 的 getParameter 和getParameterValues 方法得到 part 的字符串值。
+
+- 如果 servlet 的容器不提供 multi-part/form-data 格式数据的处理，这些数据将可通过 HttpServletReuqest.getInputStream 得到。
+
+## 属性
+
+属性是与请求相关联的对象。属性可以由容器设置来表达信息，否则无法通过 API 表示，或者由 servlet 设置将信息传达给另一个 servlet（通过 RequestDispatcher）。属性通过 ServletRequest 接口中下面的方法来访问：
+
+
+- getAttribute
+- getAttributeNames
+- setAttribute
+
+一个属性名称只能关联一个属性值。
+
+属性名称以java.前缀开头。和javax.保留供本规范定义。同样，以sun.，com.sun.，oracle和com.oracle前缀开头的属性名称保留给Oracle Corporation定义。建议根据[Java编程语言的规范](http://docs.oracle.com/javase/specs/)提出的用于包命名的反向域名约定来命名放置在属性集中的所有属性。
+
+## 请求头
+
+通过下面的 HttpServletRequest 接口方法，servlet 可以访问 HTTP 请求的头信息：
+
+
+- getHeader
+- getHeaders
+- getHeaderNames
+
+getHeader 方法返回给定头名称的头。多个头可以具有相同的名称，例如HTTP 请求中的 Cache-Control 头。如果多个头的名称相同，getHeader方法返回请求中的第一个头。 getHeaders 方法允许访问所有与特定头名称相关的头值，返回一个 String 对象的 Enumeration（枚举）。 头可包含由 String 形式的 int 或 Date 数据。HttpServletRequest接口提供如下方便的方法访问这些类型的头数据：
+
+
+- getIntHeader
+- getDateHeader
+
+如果 getIntHeader 方法不能转换为 int 的头值，则抛出NumberFormatException 异常。如果 getDateHeader 方法不能把头转换成一个 Date 对象，则抛出 IllegalArgumentException 异常。
+
+
+
+## 请求路径元素
+
+引导 servlet 服务请求的请求路径由许多重要部分组成。以下元素从请求URI路径得到，并通过请求对象公开：
+
+- Context Path：与ServletContext相关联的路径前缀是这个Servlet 的一部分。如果这个上下文是基于Web服务器的URL命名空间基础上的“默认”上下文，那么这个路径将是一个空字符串。否则，如果上下文不是基于服务器的命名空间，那么这个路径以“/”字符开始，但不以“/”字符结束。
+- Servlet Path：路径部分直接与激活请求的映射对应。这个路径以“/”字符开头，如果请求与“/*”或“”模式匹配，在这种情况下，它是一个空字符串。
+- PathInfo：请求路径的一部分，不属于Context Path或Servlet Path。如果没有额外的路径，它要么是null，要么是以“/”开头的字符串。
+
+使用 HttpServletRequest 接口中的下面方法来访问这些信息：
+
+- getContextPath
+- getServletPath
+- getPathInfo
+
+```
+requestURI = contextPath + servletPath + pathInfo
+
+```
+
+举几个例子来解析上述各点，请考虑以下几点：
+TABLE 3-1 Example Context Set Up
+
+Context Path|/catalog 
+-|-
+Servlet Mapping|Pattern: Servlet:/lawn/* LawnServlet
+Servlet Mapping|Pattern: Servlet:/garden/* GardenServlet
+Servlet Mapping|Pattern: Servlet:*.jsp JSPServlet
+
+
+遵守下列行为：
+TABLE 3-2 Observed Path Element Behavior
+
+请求路径|	路径元素
+-|-
+/catalog/lawn/index.html|	ContextPath: /catalog<br> ServletPath: /lawn <br> PathInfo: /index.html
+/catalog/garden/implements/	|ContextPath: /catalog<br>  ServletPath: /garden <br> PathInfo: /implements/
+/catalog/help/feedback.jsp|	ContextPath: /catalog<br>  ServletPath: /help/feedback.jsp<br>  PathInfo: null
+
+## 路径转换方法
+
+在 API 中有两个方便的方法，允许开发者获得与某个特定的路径等价的文件系统路径。这些方法是：
+
+
+- ServletContext.getRealPath
+- HttpServletRequest.getPathTranslated
+
+ getRealPath 方法需要一个 String 参数，并返回一个 String 形式的路径，这个路径对应一个在本地文件系统上的文件 getPathTranslated 方法推断出请求的 pathInfo 的实际路径。 这些方法在 servlet 容器无法确定一个有效的文件路径 的情况下，如 Web应用程序从归档中，在不能访问本地的远程文件系统上，或在一个数据库中执行时，这些方法必须返回 null。JAR 文件中 META-INF/resources 目录下的资源，只有当调用 getRealPath()  方法时才认为容器已经从包含它的 JAR 文件中解压，在这种情况下，必须返回解压缩后位置。
+
+译者注：
+方法|结果
+-|-
+URL|http://127.0.0.1:8080/test/test2?a=2342
+getServletPath|/test
+getContextPath|""
+getPathInfo|/test2
+getPathTranslated()|/private/var/folders/t1/czp1j7dx6kz5c_25_2glbfw40000gn/T/undertow-docbase.2053444027420375252.8080/test2
+getRealPath("/")|/private/var/folders/t1/czp1j7dx6kz5c_25_2glbfw40000gn/T/undertow-docbase.2053444027420375252.8080
+
+## 非阻塞 IO
+
+Web 容器中的非阻塞请求处理有助于提高对改善 Web 容器可扩展性不断增加的需求，增加 Web 容器可同时处理请求的连接数量。servlet 容器的非阻塞 IO 允许开发人员在数据可用时读取数据或在数据可写时写数据。非阻塞 IO 仅对在 Servlet 和 Filter（2.3.3.3节定义的，“异步处理”）中的异步请求处理和升级处理（2.3.3.5节定义的，“升级处理”）有效。否则，当调用 ServletInputStream.setReadListener 或ServletOutputStream.setWriteListener 方法时将抛出IllegalStateException。
+
+ReadListener 为非阻塞IO提供了下面的回调方法：
+
+- ReadListener
+    - onDataAvailable().当可以从传入的请求流中读取数据时ReadListener 的 onDataAvailable 方法被调用。当数据可读时容器初次调用该方法。当且仅当下面描述的 ServletInputStream 的isReady 方法返回 false，容器随后将调用 onDataAvailable 方法。
+    - onAllDataRead().当读取完注册了此监听器的 ServletRequest 的所有数据时调用 onAllDataRead 方法。
+    - onError(Throwable t). 处理请求时如果有任何错误或异常发生时调用 onError 方法。
+    
+容器必须线程安全的访问 ReadListener 中的方法。
+
+除了上述 ReadListener 定义的方法外，下列方法已被添加到ServletInputStream 类中：
+
+- ServletInputStream
+    - boolean isFinished(). ServletInputStream 相关的请求的所有数据已经读取完时 isFinished 方法返回 true。否则返回 false。
+    - boolean isReady().如果可以无阻塞地读取数据 isReady 方法返回 true。如果没有数据可以无阻塞地读取该方法返回 false。如果isReady 方法返回 false，调用 read 方法是非法的，且必须抛出IllegalStateException。
+    - void setReadListener(ReadListener listener). 设置上述定义的 ReadListener，调用它以非阻塞的方式读取数据。一旦把监听器与给定的 ServletInputStream 关联起来，当数据可以读取，所有的数据都读取完或如果处理请求时发生错误，容器调用 ReadListener 的方法。注册一个 ReadListener 将启动非阻塞 IO。在那时切换到传统的阻塞IO是非法的，且必须抛出 IllegalStateException。在当前请求范围内，随后调用 setReadListener 是非法的且必须抛出IllegalStateException。
+
+## http2 服务器推送
+
+服务器推送是显示在Servlet API中的HTTP / 2改进中最明显的。HTTP / 2中的所有新功能（包括服务器推送）均旨在改善Web浏览体验的感知性能。服务器推入是基于这样一个简单的事实，即服务器处于比客户端更好的位置上，以了解初始请求会附带哪些其他资产（例如图像，样式表和脚本），这有助于提高浏览器的感知性能。例如，服务器可能知道，每当浏览器请求index.html时，此后不久它将请求header.gif，footer.gif和style.css。由于服务器知道这一点，因此它们可以抢先开始将这些资产的字节与index.html的字节一起发送。
+
+<br>
+要使用服务器推送，请从HttpServletRequest获取对PushBuilder的引用，根据需要更改生成器，然后调用push（）。请参阅javadoc中有关方法javax.servlet.http.HttpServletRequest.newPushBuilder（）的信息，以及有关类javax.servlet.http.PushBuilder的规范。本节的其余部分针对第vi页“其他重要参考”中引用的HTTP / 2规范版本中标题为“服务器推送”的部分，提出了实现要求。
+
+<br>
+
+除非明确排除，否则Servlet 4.0容器必须支持HTTP/2规范部分“服务器推送”中指定的服务器推送。如果客户端能够使用HTTP/2，则容器必须启用服务器推送，除非客户端通过为当前连接发送SETTINGS_ENABLE_PUSH设置值0（零）来显式禁用服务器推送。在这种情况下，仅对于该连接，不得启用服务器推送。
+
+除了允许客户端使用SETTINGS_ENABLE_PUSH设置来禁用服务器推送外，Servlet容器还必须通过注意引用已推送流的流标识符的CANCEL或REFUSED_STREAM代码来满足客户端的请求，以更细粒度地不接收推送响应。这种交互的一种常见用法是当浏览器的缓存中已有资源时。
+
+
+##Cookie
+
+HttpServletRequest 接口提供了 getCookies 方法来获得请求中的cookie 的一个数组。这些 cookie 是从客户端发送到服务器端的客户端发出的每个请求上的数据。典型地，客户端发送回的作为 cookie 的一部分的唯一信息是 cookie 的名称和 cookie 值。当 cookie 发送到浏览器时可以设置其他 cookie 属性，诸如注释，这些信息不会返回到服务器。该规范还允许的 cookies 是 HttpOnly cookie。HttpOnly cookie 暗示客户端它们不会暴露给客户端脚本代码（它没有被过滤掉，除非客户端知道如何查找此属性）。使用 HttpOnly cookie 有助于减少某些类型的跨站点脚本攻击。
+
+## SSL 属性
+
+如果请求已经是通过一个安全协议发送，如 HTTPS，必须通过ServletRequest 接口的 isSecure 方法公开该信息。Web 容器必须公开下列属性给 servlet 程序员：
+TABLE 3-3 Protocol Attributes
+
+属性|	属性名称|	Java类型
+-|-|-
+密码套件|	javax.servlet.request.cipher_suite|	String
+算法的位大小|	javax.servlet.request.key_size|	Integer
+SSL 会话 id|	javax.servlet.request.ssl_session_id|	String
+
+如果有一个与请求相关的 SSL 证书，它必须由 servlet 容器以java.security.cert.X509Certificate 类型的对象数组暴露给servlet 程序员并可通过一个javax.servlet.request.X509Certificate 类型的 ServletRequest属性访问。
+这个数组的顺序是按照信任的升序顺序。证书链中的第一个证书是由客户端设置的，第二个是用来验证第一个的，等等。
+
+## 国际化
+
+客户可以选择希望 Web 服务器用什么语言来响应。该信息可以和使用Accept-Language 头与 HTTP/1.1 规范中描述的其他机制的客户端通信。ServletRequest 接口提供下面的方法来确定发送者的首选语言环境：
+
+- getLocale
+- getLocales
+
+getLocale 方法将返回客户端要接受内容的首选语言环境。要了解更多关于 Accept-Language 头必须被解释为确定客户端首选语言的信息，请参阅 RFC 2616（HTTP/1.1）14.4节。
+getLocales 方法将返回一个Locale 对象的 Enumeration (枚举)，从首选语言环境开始顺序递减，这些语言环境是可被客户接受的语言环境。 如果客户端没有指定首选语言环境，getLocale 方法返回的语言环境必须是 servlet 容器默认的语言环境，而 getLocales 方法必须返回只包含一个默认语言环境的 Local 元素的枚举。
+
+## Request数据编码
+
+目前，许多浏览器不随着 Content-Type 头一起发送字符编码限定符，而是根据读取 HTTP 请求确定字符编码。如果客户端请求没有指定请求默认的字符编码，容器用来创建请求读取器和解析 POST 数据的编码必须是“ISO-8859-1”。然而，为了向开发人员说明客户端没有指定请求默认的字符编码，在这种情况下，客户端发送字符编码失败，容器从getCharacterEncoding 方法返回 null。
+
+如果客户端没有设置字符编码，并使用不同的编码来编码请求数据，而不是使用上面描述的默认的字符编码，那么可能会发生问题。为了弥补这种情况，ServletRequest 接口添加了一个新的方法 setCharacterEncoding(String enc)。开发人员可以通过调用此方法来覆盖由容器提供的字符编码。必须在解析任何 post 数据或从Request读取任何输入之前调用此方法。此方法一旦调用，将不会影响已经读取的数据的编码。
+
+## Request对象生命周期
+
+每个Request对象只在一个 servlet 的 service 方法的作用域内，或过滤器的 doFilter 方法的作用域内有效，除非该组件启用了异步处理并且调用了请求对象的 startAsync 方法。在发生异步处理的情况下，请求对象一直有效，直到调用 AsyncContext 的 complete 方法。容器通常会重复利用Request对象，以避免创建请求对象而产生的性能开销。开发人员必须注意的是，不建议在上述范围之外保持 startAsync 方法还没有被调用的请求对象的引用，因为这样可能产生不确定的结果。
+在升级情况下，如上描述仍成立。
+
 
 
 
 # <a id="context">Servlet Context(Servlet上下文)</a>
+
+## ServletContext 接口介绍
+
+ServletContext 接口定义了 servlet 运行在的 Web 应用的视图。容器供应商负责提供 servlet 容器的 ServletContext 接口的实现。servlet 可以使用 ServletContext 对象记录事件，获取 URL 引用的资源，存取当前上下文的其他 servlet 可以访问的属性。
+ServletContext 是 Web 服务器中已知路径的根。例如，servlet 上下文可以从 http://www.waylau.com/catalog 找出，/catalog 请求路径称为上下文路径，所有以它开头的请求都会被路由到与 ServletContext 相关联的 Web 应用。
+
+## ServletContext 接口作用域
+
+每一个部署到容器的 Web 应用都有一个 ServletContext 接口的实例与之关联。在容器分布在多台虚拟机的情况下，每个 JVM 的每个 Web 应用将有一个 ServletContext 实例。
+如果容器内的 Servlet 没有部署到 Web 应用中，则隐含的作为“默认” Web 应用的一部分，并有一个默认的 ServletContext 。在分布式的容器中，默认的 ServletContext 是非分布式的且仅存在于一个 JVM 中。
+
+## 初始化参数
+
+如下 ServletContext 接口方法允许 servlet 访问由应用开发人员在Web 应用中的部署描述符中指定的上下文初始化参数：
+
+- getInitParameter
+- getInitParameterNames
+
+应用开发人员使用初始化参数来表达配置信息。代表性的例子是一个网络管理员的 e-mail 地址，或保存关键数据的系统名称。
+
+## 配置方法
+
+下面的方法从 Servlet 3.0 开始添加到 ServletContext，以便启用编程方式定义 Servlet、Filter 和它们映射到的 url 模式。这些方法只能从 ServletContextListener 实现的 contexInitialized 方法或者 ServletContainerInitializer 实现的 onStartup方法进行的应用初始化过程中调用。 除了添加 Servlet 和 Filter，也可以查找关联到Servlet 或 Filter 的一个 Registration 对象实例，或者到 Servlet 或 Filter 的所有 Registration 对象的 map。 如果 ServletContext 传到了 ServletContextListener 的 contextInitialized 方法，但该 ServletContextListener 即没有在 web.xml 或 web-fragment.xml 中声明也没有使用 @WebListener 注解，则在 ServletContext 中定义的用于 Servlet、Filter 和 Listener 的编程式配置的所有方法必须抛出UnsupportedOperationException。
+
+### 编程式添加和配置 Servlet
+
+编程式添加 Servlet 到上下文对框架开发者是很有用的。例如，框架可以使用这个方法声明一个控制器 servlet。这个方法将返回一个ServletRegistration 或 ServletRegistration.Dynamic 对象，允许我们进一步配置如 init-params，url-mapping 等 Servlet 的其他参数。下面描述了该方法的三个重载版本。
+
+#### addServlet(String servletName, String className)
+
+该方法允许应用以编程方式声明一个 servlet。它添加给定的servlet名称和class名称到 servlet 上下文
+
+#### addServlet(String servletName, Servlet servlet)
+
+该方法允许应用以编程方式声明一个 Servlet。它添加给定的名称和Servlet 实例的 Servlet 到 servlet 上下文。
+
+####  addServlet(String servletName, Class &lt;? extends Servlet &gt; servletClass)
+
+该方法允许应用以编程方式声明一个 Servlet。它添加给定的名称和Servlet 类的一个实例的 Servlet 到 servlet 上下文
+
+#### T createServlet(Class clazz)
+该方法实例化一个给定的 Servlet class，该方法必须支持适用于Servlet 的除了 @WebServlet 的所有注解。 返回的 Servlet 实例通过调用上边定义的 addServlet(String, Servlet) 注册到 ServletContext 之前，可以进行进一步的定制。
+
+#### ServletRegistration getServletRegistration(String servletName)
+
+该方法返回与指定名字的 Servlet 相关的 ServletRegistration，或者如果没有该名字的 ServletRegistration 则返回 null。如果ServletContext 传到了 ServletContextListener 的contextInitialized 方法，但该 ServletContextListener 即没有在web.xml或web-fragment.xml 中声明也没有使用javax.servlet.annotation.WebListener 注解，则必须抛出UnsupportedOperationException。
+
+#### Map getServletRegistrations()
+
+该方法返回 ServletRegistration 对象的 map，由名称作为键并对应着注册到 ServletContext 的所有 Servlet。如果没有 Servlet 注册到ServletContext 则返回一个空的 map。返回的 Map 包括所有声明和注解的 Servlet 对应的 ServletRegistration 对象，也包括那些使用addServlet 方法添加的所有 Servlet 对于的 ServletRegistration 对象。返回的 Map 的任何改变不影响 ServletContext。如果ServletContext 传到了 ServletContextListener 的contextInitialized 方法，但该 ServletContextListener 即没有在web.xml 或 web-fragment.xml 中声明也没有使用javax.servlet.annotation.WebListener 注解，则必须抛出UnsupportedOperationException。
+
+### 编程式添加和配置 Filter
+
+#### addFilter(String filterName, String className)
+
+该方法允许应用以编程方式声明一个 Filter。它添加以给定的名称和class 名称的 Filter 到 web 应用。
+
+####  addFilter(String filterName, Filter filter)
+
+该方法允许应用以编程方式声明一个 Filter。它添加以给定的名称和filter 实例的 Filter 到 web 应用。
+####  addFilter(String filterName, Class &lt;? extends Filter &gt; filterClass)
+
+该方法允许应用以编程方式声明一个 Filter。它添加以给定的名称和filter 类的一个实例的 Filter 到 web 应用。
+T createFilter(Class clazz)
+该方法实例化一个给定的 Filter class，该方法必须支持适用于 Filter的所有注解。
+返回的 Filter 实例通过调用上边定义的 ####  addServlet(String, Filter)注册到 ServletContext 之前，可以进行进一步的定制。给定的 Filter 类必须定义一个用于实例化的空参构造器。
+
+####  FilterRegistration getFilterRegistration(String filterName)
+
+该方法返回与指定名字的 Filter 相关的 FilterRegistration，或者如果没有该名字的 FilterRegistration 则返回 null。如果ServletContext 传到了 ServletContextListener 的contextInitialized 方法，但该 ServletContextListener 即没有在web.xml 或 web-fragment.xml 中声明也没有使用javax.servlet.annotation.WebListener 注解，则必须抛出UnsupportedOperationException。
+
+####  Map getFilterRegistrations()
+该方法返回 FilterRegistration 对象的 map，由名称作为键并对应着注册到 ServletContext 的所有 Filter。如果没有 Filter 注册到ServletContext 则返回一个空的 Map。返回的 Map 包括所有声明和注解的 Filter 对应的 FilterRegistration 对象，也包括那些使用addFilter 方法添加的所有 Servlet 对于的 ServletRegistration 对象。返回的 Map 的任何改变不影响 ServletContext。如果ServletContext 传到了 ServletContextListener 的contextInitialized 方法，但该 ServletContextListener 即没有在web.xml 或 web-fragment.xml 中声明也没有使用javax.servlet.annotation.WebListener 注解，则必须抛出UnsupportedOperationException。
+
+### 编程式添加和配置 Listener
+
+#### void addListener(String className)
+
+往 ServletContext 添加指定 class 名称的监听器。ServletContext 将使用由与应用关联的 classloader 装载加载该给定名称的 class，且它们必须实现一个或多个以下接口：
+
+- javax.servlet.ServletContextAttributeListener
+- javax.servlet.ServletRequestListener
+- javax.servlet.ServletRequestAttributeListener
+- javax.servlet.http.HttpSessionListener
+- javax.servlet.http.HttpSessionAttributeListener
+- javax.servlet.http.HttpSessionIdListener
+
+如果 ServletContext 传到了 ServletContainerInitializer 的onStartup 方法，则给定名字的类可以实现除上面列出的接口之外的javax.servlet.ServletContextListener。作为该方法调用的一部分，容器必须装载指定类名的 class，以确保其实现了所需的接口之一。如果给定名字的类实现了一个监听器接口，则其调用顺序和声明顺序是一样的，换句话说，如果它实现了 javax.servlet.ServletRequestListener 或 javax.servlet.http.HttpSessionListener，那么新的监听器将被添加到该接口的有序监听器列表的末尾。
+
+#### void addListener(T t)
+
+往 ServletContext 添加一个给定的监听器。给定的监听器实例必须实现一个或多个如下接口：
+
+- javax.servlet.ServletContextAttributeListener
+- javax.servlet.ServletRequestListener
+- javax.servlet.ServletRequestAttributeListener
+- javax.servlet.http.HttpSessionListener
+- javax.servlet.http.HttpSessionAttributeListener
+- javax.servlet.http.HttpSessionIdListener
+
+如果 ServletContext 传到了 ServletContainerInitializer 的onStartup 方法，则给定的监听器实例可以实现除上面列出的接口之外的javax.servlet.ServletContextListener。如果给定的监听器实例实现了一个监听器接口，则其调用顺序和声明顺序是一样的，换句话说，如果它实现了 javax.servlet.ServletRequestListener 或 javax.servlet.http.HttpSessionListener，那么新的监听器将被添加到该接口的有序监听器列表的末尾。
+
+### void addListener(Class &lt;? extends EventListener&gt; listenerClass)
+
+往 ServletContext 添加指定 class 类型的监听器。给定的监听器类必须实现是一个或多个如下接口：
+
+- javax.servlet.ServletContextAttributeListener
+- javax.servlet.ServletRequestListener
+- javax.servlet.ServletRequestAttributeListener
+- javax.servlet.http.HttpSessionListener
+- javax.servlet.http.HttpSessionAttributeListener
+- javax.servlet.http.HttpSessionIdListener
+
+如果 ServletContext 传到了 ServletContainerInitializer 的onStartup 方法，则给定的监听器类可以实现除上面列出的接口之外的javax.servlet.ServletContextListener。如果给定的监听器类实现了一个监听器接口，则其调用顺序和声明顺序是一样的，换句话说，如果它实现了 javax.servlet.ServletRequestListener 或 javax.servlet.http.HttpSessionListener，那么新的监听器将被添加到该接口的有序监听器列表的末尾。
+
+### void createListener(Class clazz)
+
+该方法实例化给定的 EventListener 类。指定的 EventListener 类必须实现至少一个如下接口：
+
+- javax.servlet.ServletContextAttributeListener
+- javax.servlet.ServletRequestListener
+- javax.servlet.ServletRequestAttributeListener
+- javax.servlet.http.HttpSessionListener
+- javax.servlet.http.HttpSessionAttributeListener
+- javax.servlet.http.HttpSessionIdListener
+
+该方法必须支持该规范定义的适用于如上接口的所有注解。返回的EventListener 实例可以在通过调用 addListener(T t) 注册到ServletContext 之前进行进一步的定制。给定的 EventListener 必须定义一个用于实例化的空参构造器。
+
+
+#### 用于编程式添加 Servlet、Filter 和 Listener 的注解处理需求
+
+除了需要一个实例的 addServlet 之外，当使用编程式API添加Servlet或创建Servlet时，以下类中的有关的注解必须被内省且其定义的元数据必须被使用，除非它被 ServletRegistration.Dynamic / ServletRegistration 中调用的API覆盖了。
+@ServletSecurity、@RunAs、@DeclareRoles、@MultipartConfig。
+对于 Filter 和 Listener 来说，不需要使用注解来内省。 除了通过需要一个实例的方法添加的那些组件，编程式添加或创建的所有组件（Servlet，Filter和Listener）上的资源注入，只有当组件是一个CDI Managed Bean时才被支持。进一步了解更多细节请参考15.5.15，“JavaEE 要求的上下文和依赖注入”。
+
+### 以编程方式配置会话超时
+
+ServletContext接口的以下方法允许Web应用程序访问和配置给定Web应用程序中创建的所有会话的默认会话超时间隔。setSessionTimeout中指定的超时以分钟为单位。如果超时等于或小于0，则容器将确保会话的默认行为永远不会超时。
+
+-  getSessionTimeout()
+- setSessionTimeout(int timeout)
+
+### 以编程方式配置字符编码
+
+ServletContext接口的以下方法允许Web应用程序访问和配置请求和响应字符编码。
+
+- getRequestCharacterEncoding()
+- setRequestCharacterEncoding(String encoding)
+- getResponseCharacterEncoding()
+- setResponseCharacterEncoding(String encoding)
+
+如果在部署描述符或特定于容器的配置中（对于容器中的所有Web应用程序）未指定请求字符编码，则getRequestCharacterEncoding（）返回null。如果在部署描述符或特定于容器的配置中（对于容器中的所有Web应用程序）未指定响应字符编码，则getResponseCharacterEncoding（）返回null。
+
+
+## 上下文属性
+
+servlet 可以通过名字将对象属性绑定到上下文。同一个 Web 应用内的其他任何 servlet 都可以使用绑定到上下文的任意属性。以下 ServletContext 接口中的方法允许访问此功能：
+
+
+- setAttribute
+- getAttribute
+- getAttributeNames
+- removeAttribute
+
+### 分布式容器中的上下文属性
+
+在 JVM 中创建的上下文属性是本地的，这可以防止从一个分布式容器的共享内存存储中获取 ServletContext 属性。当需要在运行在分布式环境的Servlet 之间共享信息时，该信息应该被放到会话中（请看第7章，“会话”），或存储到数据库，或者设置到 Enterprise JavaBeans™ （企业级 JavaBean）组件。
+
+## 资源
+
+ServletContext 接口提供了直接访问 Web 应用中仅是静态内容层次结构的文件的方法，包括 HTML，GIF 和 JPEG 文件：
+
+- getResource
+- getResourceAsStream
+
+getResource 和 getResourceAsStream 方法需要一个以 “/” 开头的String 作为参数，给定的资源路径是相对于上下文的根，或者相对于 web应用的 WEB-INF/lib 目录下的 JAR 文件中的 META-INF/resources 目录。这两个方法首先根据请求的资源查找 web 应用上下文的根，然后查找所有 WEB-INF/lib 目录下的 JAR 文件。查找 WEB-INF/lib 目录中 JAR文件的顺序是不确定的。这种层次结构的文件可以存在于服务器的文件系统，Web 应用的归档文件，远程服务器，或在其他位置。
+这两个方法不能用于获取动态内容。例如，在支持 JavaServer Pages™规范的容器中，如 getResource("/index.jsp") 形式的方法调用将返回 JSP 源码而不是处理后的输出。请看第9章，“分发请求”获取更多关于动态内容的信息。 可以使用 getResourcePaths(String path) 方法访问 Web 应用中的资源的完整列表。该方法的语义的全部细节可以从本规范的 API 文档中找到。
+
+
+## 多主机和 Servlet 上下文
+
+Web 服务器可以支持多个逻辑主机共享一个服务器 IP 地址。有时，这种能力被称为“虚拟主机”。这种情况下，每一个逻辑主机必须有它自己的 servlet 上下文或一组 servlet 上下文。servlet 上下文不会在虚拟主机之间共享。
+
+
+ServletContext 接口的 getVirtualServerName 方法允许访问ServletContext 部署在的逻辑主机的配置名字。该方法必须对所有部署在逻辑主机上的所有 servlet 上下文返回同一个名字。且该方法返回的名字必须是明确的、每个逻辑主机稳定的、和适合用于关联服务器配置信息和逻辑主机。
+
+## 重载注意事项
+
+
+尽管 Container Provider (容器供应商)不需要实现类的重加载模式以便易于开发，但是任何此类的实现必须确保所有 servlet 及它们使用的类（Servlet使用的系统类异常可能使用的是一个不同的 class loader）在一个单独的 class loader 范围内被加载。为了保证应用像开发人员预期的那样工作，该要求是必须的。作为一个开发辅助，容器应支持到会话绑定到的监听器的完整通知语义以用于当 class 重加载时会话终结的监控。
+之前几代的容器创建新的 class loader 来加载 servlet，且与用于加载在 servlet 上下文中使用的其他 servlet 或类的 class loader 是完全不同的。这可能导致 servlet 上下文中的对象引用指向意想不到的类或对象，并引起意想不到的行为。为了防止因创建新的 class loader 所引起的问题，该要求是必须的。
+
+
+### 临时工作目录
+
+每一个 servlet 上下文都需要一个临时的存储目录。servlet 容器必须为每一个 servlet 上下文提供一个私有的临时目录，并将通过javax.servlet.context.tempdir 上下文属性使其可用，关联该属性的对象必须是 java.io.File 类型。
+该要求公认为在多个 servlet 引擎实现中提供一个通用的便利。当 servlet 容器重启时，它不需要去保持临时目录中的内容，但必须确保一个 servlet 上下文的临时目录中的内容对运行在同一个 servlet 容器的其他 Web 应用的上下文不可见。
+
 # The Response(访问响应)
+
+响应对象封装了从服务器返回到客户端的所有信息。在HTTP协议中，这些信息是包含在从服务器传输到客户端的HTTP头信息或响应的消息体中。
+
+## 缓存
+出于性能的考虑，servlet 容器允许（但不要求）缓存输出到客户端的内容。一般的，服务器是默认执行缓存，但应该允许 servlet 来指定缓存参数。
+下面是 ServletResponse 接口允许 servlet 来访问和设置缓存信息的方法：
+
+- getBufferSize
+- setBufferSize
+- isCommitted
+- reset
+- resetBuffer
+- flushBuffer
+
+不管 servlet 使用的是一个 ServletOutputStream 还是一个 Writer，ServletResponse 接口提供的这些方法允许执行缓冲操作。 getBufferSize 方法返回使用的底层缓冲区大小。如果没有使用缓冲，该方法必须返回一个 int 值 0。 Servlet 可以请求 setBufferSize 方法设置一个最佳的缓冲大小。不一定分配 servlet 请求大小的缓冲区，但至少与请求的大小一样大。这允许容器重用一组固定大小的缓冲区，如果合适，可以提供一个比请求时更大的缓冲区。该方法必须在使用 ServletOutputStream 或 Writer 写任何内容之前调用。如果已经写了内容或响应对象已经提交，则该方法必须抛出IllegalStateException。
+isCommitted 方法返回一个表示是否有任何响应字节已经返回到客户端的boolean 值。flushBuffer 方法强制刷出缓冲区的内容到客户端。 当响应没有提交时，reset方法清空缓冲区的数据。头信息，状态码和在调用 reset 之前 servlet 调用 getWriter 或 getOutputStream 设置的状态也必须被清空。如果响应没有被提交，resetBuffer 方法将清空缓冲区中的内容，但不清空请求头和状态码。
+如果响应已经提交并且 reset 或 resetBuffer 方法已被调用，则必须抛出 IllegalStateException，响应及它关联的缓冲区将保持不变。
+当使用缓冲区时，容器必须立即刷出填满的缓冲区内容到客户端。如果这是最早发送到客户端的数据，且认为响应被提交了。
+
+## 头
+servlet 可以通过下面 HttpServletResponse 接口的方法来设置 HTTP 响应头：
+
+- setHeader
+- addHeader
+
+setHeader 方法通过给定的名字和值来设置头。前面的头会被后来的新的头替换。如果已经存在同名的头集合的值，集合中的值会被清空并用新的值替换。
+
+addHeader 方法使用给定的名字添加一个头值到集合。如果没有头与给定的名字关联，则创建一个新的集合。
+
+
+
+头可能包含表示 int 或 Date 对象的数据。以下 HttpServletResponse接口提供的便利方法允许 servlet 对适当的数据类型用正确的格式设置一个头：
+
+- setIntHeader
+- setDateHeader
+- addIntHeader
+- addDateHeader
+
+为了成功传送回客户端，必须在提交响应之前设置标头（而不是trailer）。提交响应后设置的标头（不是trailer）将被servlet容器忽略。如果要在响应中发送RFC 7230中指定的HTTP trailer，则必须使用HttpServletResponse上的setTrailerFields（）方法提供它们。在编写分块响应中的最后一个分块之前，必须已调用此方法。Servlet程序员负责确保在响应对象中为Servlet生成的内容正确设置Content-Type标头。HTTP 1.1规范不需要在HTTP响应中设置此标头。当Servlet程序员未设置默认内容类型时，Servlet容器不得设置默认内容类型。建议容器使用X-Powered-By HTTP标头发布其实现信息。该字段值应包含一种或多种实现类型，例如“ Servlet / 4.0”。可选地，可以在括号内的实现类型之后添加容器和基础Java平台的补充信息。容器应可配置为禁止显示此标头。
+
+Here’s the examples of this header.
+
+```
+X-Powered-By: Servlet/4.0
+X-Powered-By: Servlet/4.0 JSP/2.3 (GlassFish Server Open Source Edition 5.0 Java/Oracle Corporation/1.8)
+```
+
+## HTTP Trailer
+
+
+HTTP Trailer 是响应主体之后的一种特殊的HTTP标头的集合。Trailer在RFC 7230中指定。它们在分块传输编码的上下文中以及在其他通信协议的实现中很有用。Servlet容器为Trailer提供支持。
+
+如果预告片标头已准备好读取，则isTrailerFieldsReady（）将返回true。然后，Servlet可以通过HttpServletRequest接口的getTrailerFields（）方法读取HTTP请求的尾标头。
+
+
+通过向HttpServletResponse接口的setTrailerFields方法提供Supplier，Servlet可以将尾部报头写入响应。可以通过访问HttpServletResponse接口的getTrailerFields（）方法来获取。
+
+有关规范规范的这两种方法，请参见javadoc。
+译者注：参考 [Trailer - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Trailer)
+
+##  非阻塞 IO
+
+非阻塞 IO 仅对在 Servlet 和 Filter（2.3.3.3节定义的，“异步处理”）中的异步请求处理和升级处理（2.3.3.5节定义的，“升级处理”）有效。否则，当调用 ServletInputStream.setReadListener 或ServletOutputStream.setWriteListener 方法时将抛出IllegalStateException。为了支持在 Servlet 容器中的非阻塞写，除了在3.7节描述的“非阻塞IO” 对 ServletRequest 做的更改之外，下面做出的更改以便于处理响应相关的类/接口。
+
+WriteListener提供了如下适用于容器调用的回调方法。
+
+- WriteListener
+    - void onWritePossible().当一个 WriteListener注册到ServletOutputStream时，当可以写数据时该方法将被容器首次调用。当且仅当下边描述的ServletOutputStream的isReady 方法返回false，容器随后将调用该方法。
+    - onError(Throwable t).当处理响应过程中出现错误时回调。 除了WriteListener外，还有如下方法被添加到ServletOutputStream类并允许开发人员运行时检查是否可以
+- ServletOutputStream
+    - boolean isReady(). 如果往 ServletOutputStream 写会成功，则该方法返回 true，其他情况会返回 false。如果该方法返回 true，可以在 ServletOutputStream 上执行写操作。如果没有后续的数据能写到 ServletOutputStream，那么直到底层的数据被刷出之前该方法将一直返回 false。且在此时容器将调用 WriteListener 的onWritePossible 方法。随后调用该方法将返回 true。
+    - void setWriteListener(WriteListener listener). 关联WriteListener 和当且的ServletOutputStream，当ServletOutputStream可以写入数据时容器会调用WriteListener的回调方法。注册了 WriteListener 将开始非阻塞IO。此时再切换到传统的阻塞 IO 是非法的。
+
+
+容器必须线程安全的访问WriteListener 中的方法。
+
+## 简便方法
+
+HttpServletResponse提供了如下简便方法：
+
+- sendRedirect
+- sendError 
+sendRedirect方法将设置适当的头和内容体将客户端重定向到另一个地址。使用相对 URL 路径调用该方法是合法的，但是底层的容器必须将传回到客户端的相对地址转换为全路径 URL。无论出于什么原因，如果给定的URL是不完整的，且不能转换为一个有效的URL，那么该方法必须抛出IllegalArgumentException。
+
+
+sendError方法将设置适当的头和内容体用于返回给客户端返回错误消息。可以 sendError 方法提供一个可选的 String 参数用于指定错误的内容体。
+如果响应已经提交并终止，这两个方法将对提交的响应产生负作用。这两个方法调用后 servlet 将不会产生到客户端的后续的输出。这两个方法调用后如果有数据继续写到响应，这些数据被忽略。 如果数据已经写到响应的缓冲区，但没有返回到客户端（例如，响应没有提交），则响应缓冲区中的数据必须被清空并使用这两个方法设置的数据替换。如果响应已提交，这两个方法必须抛出 IllegalStateException。
+
+## 国际化
+
+Servlet 应设置响应的 locale和字符集。使用ServletResponse.setLocale方法设置locale。该方法可以重复的调用；但响应被提交后调用该方法不会产生任何作用。如果在页面被提交之前 servlet 没有设置locale，容器的默认 locale 将用来确定响应的locale，但是没有制定与客户端通信的规范，例如使用 HTTP 情况下的Content-Language 头。
+
+```
+<locale-encoding-mapping-list> <locale-encoding-mapping>
+        <locale>ja</locale>
+<encoding>Shift_JIS</encoding> </locale-encoding-mapping>
+</locale-encoding-mapping-list>
+```
+&lt;response-character-encoding&gt;元素可用于为给定Web应用程序中的所有响应显式设置默认编码。
+
+```
+<response-character-encoding>UTF-8</response-character-encoding>
+```
+
+如果该元素不存在或没有提供映射，setLocale 使用容器依赖的映射。setCharacterEncoding，setContentType 和 setLocale 方法可以被重复的调用来改变字符编码。如果在 servlet 响应的 getWriter 方法已经调用之后或响应被提交之后，调用相关方法设置字符编码将没有任何作用。只有当给定的上下文类型字符串提供了一个 charset 属性值，调用 setContentType 可以设置字符编码。只有当既没有调用 setCharacterEncoding 也没有调用 setContentType 去设置字符编码之前调用 setLocale 才可以设置字符编码。
+在 ServletResponse 接口的 getWriter 方法被调用或响应被提交之前，如果 servlet 没有指定字符编码，默认使用 ISO-8859-1。
+
+如果使用的协议提供了一种这样做的方式，容器必须传递 servlet 响应的writer 使用的 locale 和字符编码到客户端。使用 HTTP 的情况下，locale 可以使用 Content-Language 头传递，字符编码可以作为用于指定文本媒体类型的 Content-Type 头的一部分传递。注意，如果没有指定上下文类型，字符编码不能通过 HTTP 头传递；但是仍使用它来编码通过servlet 响应的 writer 写的文本。
+
+## 结束响应对象
+
+当响应被关闭时，容器必须立即刷出响应缓冲区中的所有剩余的内容到客户端。以下事件表明 servlet 满足了请求且响应对象即将关闭：
+
+- servlet 的 service 方法终止。
+响应的 setContentLength 或 - setContentLengthLong 方法指定了大于零的内容量，且已经写入到响应。
+- sendError 方法已调用。
+- sendRedirect 方法已调用。
+- AsyncContext 的 complete 方法已调用
+
+## 响应对象的生命周期
+每个响应对象是只有当在 servlet 的 service 方法的范围内或在 filter 的 doFilter 方法范围内是有效的，除非该组件关联的请求对象已经开启异步处理。如果相关的请求已经启动异步处理，那么直到AsyncContext 的 complete 方法被调用，请求对象一直有效。为了避免响应对象创建的性能开销，容器通常回收响应对象。在相关的请求的startAsync 还没有调用时，开发人员必须意识到保持到响应对象引用，超出之上描述的范围可能导致不确定的行为。
+
 # Filtering (过滤器)
+
 # Session(会话)
 # <a id='Annotations'>Annotations and pluggability（注释与可插拔）</a>
+
 # Dispatching Requests（请求分发)
+
 # Web Applications(Web 应用)
+
 # Application Lifecycle Events(应用生命周期事件)
+
 # Mapping Requests to Servlets(Servlet 与访问请求的映射)
+
 # Security(安全)
 # <a id="Deployment">Deployment Descriptor(部署描述)</a>
+
 # Requirements related to other Specifications（与其它规范关联性）
+
 # Change Log (变更记录）
+
 
 本文档是在Java Community ProcessSM（JCP）下开发的Java Servlet 4.0 Servlet规范的最终版本。
 

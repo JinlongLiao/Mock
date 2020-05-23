@@ -781,11 +781,13 @@ Servlet 应设置响应的 locale和字符集。使用ServletResponse.setLocale�
 - AsyncContext 的 complete 方法已调用
 
 ## 响应对象的生命周期
+
 每个响应对象是只有当在 servlet 的 service 方法的范围内或在 filter 的 doFilter 方法范围内是有效的，除非该组件关联的请求对象已经开启异步处理。如果相关的请求已经启动异步处理，那么直到AsyncContext 的 complete 方法被调用，请求对象一直有效。为了避免响应对象创建的性能开销，容器通常回收响应对象。在相关的请求的startAsync 还没有调用时，开发人员必须意识到保持到响应对象引用，超出之上描述的范围可能导致不确定的行为。
 
 # Filtering (过滤器)
 
 # Session(会话)
+
 # <a id='Annotations'>Annotations and pluggability（注释与可插拔）</a>
 
 # Dispatching Requests（请求分发)
@@ -797,12 +799,14 @@ Servlet 应设置响应的 locale和字符集。使用ServletResponse.setLocale�
 # Mapping Requests to Servlets(Servlet 与访问请求的映射)
 
 # Security(安全)
+
 # <a id="Deployment">Deployment Descriptor(部署描述)</a>
 
 # Requirements related to other Specifications（与其它规范关联性）
 
 # Change Log (变更记录）
 
+J
 
 本文档是在Java Community ProcessSM（JCP）下开发的Java Servlet 4.0 Servlet规范的最终版本。
 

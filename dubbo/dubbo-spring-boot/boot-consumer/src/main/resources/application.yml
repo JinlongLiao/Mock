@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: dubbo-consumer-boot
+  dubbo:
+    registry: redis://127.0.0.1:6379
+server:
+  port: 9001
+

@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "spring.dubbo.registry",
+      "type": "java.lang.String",
+      "description": "Description for spring.dubbo.registry."
+    },
+    {
+      "name": "spring.dubbo.protocols.dubbo.name",
+      "type": "java.lang.String",
+      "description": "Description for spring.dubbo.protocols.dubbo.name."
+    }
+  ] }

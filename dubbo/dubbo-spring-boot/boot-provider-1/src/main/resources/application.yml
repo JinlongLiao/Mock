@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: dubbo-provider-boot  #服务注册中心以及监控中心的应用名
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/dubbo?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: root
+    hikari:
+      maximum-pool-size: 500
+      minimum-idle: 1
+      idle-timeout: 60000
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        enable_lazy_load_no_trans: true
+  dubbo:
+    registry: redis://127.0.0.1:6379  #单机模式配置
+    #zk集群模式
+  # registry:zookeeper://10.0.2.3:2181?backup=10.0.2.4:2181,10.0.2.5:2181
+    protocols:
+      dubbo:
+        name: dubbo
+        port: 20881
+        accepts: 10
+      rmi:
+        name: rmi
+        port: 9002
+
+
+server:
+  port: 9000
+
+logging:
+  config: classpath:logback.xml

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!-- 指定当前工程在服务监控中心的名称 -->
+    <dubbo:application name="01-dubbo-provider"/>
+
+    <dubbo:protocol name="dubbo" port="20880"/>
+    <dubbo:protocol name="rmi" port="1099"/>
+
+    <!-- 服务注册中心地址，N/A表示不使用注册中心 -->
+    <!--    <dubbo:registry address="zookeeper://10.0.2.3:2181"/>-->
+    <dubbo:registry address="redis://127.0.0.1:6379"/>
+
+    <!--    <bean id="testService" class="com.dubbo.demo.provider.TestDubboServiceImpl"/>-->
+
+    <dubbo:service interface="com.dubbo.demo.service.TestService" class="com.dubbo.demo.provider.TestDubboServiceImpl"
+                   protocol="dubbo" group="dubbo"/>
+    <dubbo:service interface="com.dubbo.demo.service.TestService" class="com.dubbo.demo.provider.TestRmiServiceImpl"
+                   protocol="rmi" group="rmi"/>
+
+</beans>
